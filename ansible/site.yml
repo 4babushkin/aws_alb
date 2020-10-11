@@ -1,0 +1,8 @@
+---
+- name: Simple "Hello World" Docker image based on Nginx.
+  become: yes
+  hosts: all
+
+  roles:
+   - docker-install
+   - docker-compose-hello

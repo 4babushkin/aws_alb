@@ -1,0 +1,3 @@
+hello_home: /opt/nginx-hello
+hello_user: root
+hello_group: root

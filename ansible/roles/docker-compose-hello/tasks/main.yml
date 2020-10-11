@@ -1,0 +1,20 @@
+---
+- name: Create docker-compose directory
+  file:
+    path: "{{ hello_home }}"
+    state: directory
+    owner: "{{ hello_user }}"
+    group: "{{ hello_group }}"
+    mode: 0775
+    recurse: yes
+
+- name: Copy compose file
+  copy:
+    src: files/docker-compose.yml
+    dest: "{{ hello_home }}/docker-compose.yml"
+    owner: "{{ hello_user }}"
+    group: "{{ hello_group }}"
+
+- name: Start hello service
+  docker_service:
+    project_src: "{{ hello_home }}"

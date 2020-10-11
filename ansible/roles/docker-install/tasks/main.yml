@@ -1,0 +1,43 @@
+---
+  # - name: Install python for Ansible
+  #   raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
+  #   changed_when: False
+
+  - name: Add Docker GPG apt Key
+    apt_key:
+      url: https://download.docker.com/linux/ubuntu/gpg
+      state: present
+
+  - name: Add Docker Repository
+    apt_repository:
+      repo: deb https://download.docker.com/linux/ubuntu bionic stable
+      state: present
+
+  - name: Update apt and install docker-ce
+    apt: update_cache=yes name=docker-ce state=latest
+
+  # - name: Add my user
+  #   user:
+  #     name: ubuntu
+  #     groups:
+  #       - sudo
+  #       - docker
+  #
+  # - name: Add my authorized_key
+  #   authorized_key:
+  #     user: ubuntu
+  #     key: https://github.com/4babushkin.keys
+
+  - name: Install apt packages
+    apt:
+      name:
+        - mc
+        - docker-compose
+        - git
+        - python3-pip
+
+  # - name: Install python requarements for docker modules
+  #   pip:
+  #     name:
+  #       - docker
+  #       - docker-compose
