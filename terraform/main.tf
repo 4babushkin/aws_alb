@@ -15,73 +15,18 @@ provider "aws" {
 
 
 #############################################################################
-# VPC -default
-############################################################################
-
-data "aws_subnet_ids" "default" {
-  vpc_id = data.aws_vpc.default.id
-}
-
-# Найти в VPC-подсетях Default VPC.
-data "aws_vpc" "default" {
-  default = true
-}
-
-#############################################################################
-# FAERWALL
-############################################################################
-
-
-resource "aws_security_group" "alb" {
-  name = "terraform-alb-security-group"
-
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-}
-
-# this security_group to aws_launch_configuration
-resource "aws_security_group" "instance" {
-  name = "terraform-instance-security-group"
-
-  ingress {
-    from_port   = 8080
-    to_port     = 8080
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-}
-
-
-#############################################################################
 # ALB (Application Load Balancer)
 #############################################################################
 
 # name — name
-# load_balancer_type — tipe balancer.
+# load_balancer_type — type balancer.
 # subnets — VPC default
 # security_groups — aws_security_group.instance
 
 resource "aws_lb" "alb" {
   name               = "terraform-alb"
   load_balancer_type = "application"
-  subnets            = data.aws_subnet_ids.default.ids
+  subnets            = [aws_subnet.public_zone_1a.id, aws_subnet.public_zone_1b.id]
   security_groups    = [aws_security_group.alb.id]
 }
 
@@ -124,7 +69,7 @@ resource "aws_lb_target_group" "asg-target-group" {
   name     = "terraform-aws-lb-target-group"
   port     = 8080
   protocol = "HTTP"
-  vpc_id   = data.aws_vpc.default.id
+  vpc_id   = aws_vpc.my_vpc.id
 
   health_check {
     path                = "/"
@@ -139,13 +84,13 @@ resource "aws_lb_target_group" "asg-target-group" {
 
 
 #############################################################################
-# instances
+# AutoScaling Group
 #############################################################################
 
 # UBUNTU
 resource "aws_autoscaling_group" "ubuntu-ec2" {
   launch_configuration = aws_launch_configuration.ubuntu-ec2.name
-  vpc_zone_identifier  = data.aws_subnet_ids.default.ids
+  vpc_zone_identifier  = [aws_subnet.public_zone_1a.id, aws_subnet.public_zone_1b.id]
 
   # Включаем интеграцию между ASG и ALB, указав аргумент target_group_arns
   # на целевую группу aws_lb_target_group.asg-target_group.arn,
@@ -153,8 +98,8 @@ resource "aws_autoscaling_group" "ubuntu-ec2" {
   target_group_arns = [aws_lb_target_group.asg-target-group.arn]
   health_check_type = "ELB"
 
-  min_size = 2
-  max_size = 3
+  min_size = var.min_autoscaling_size
+  max_size = var.max_autoscaling_size
 
   tag {
     key                 = "Name"
@@ -165,7 +110,7 @@ resource "aws_autoscaling_group" "ubuntu-ec2" {
 
 resource "aws_launch_configuration" "ubuntu-ec2" {
   lifecycle { create_before_destroy = true }
-  image_id      = "ami-0823c236601fef765"
+  image_id      = var.image_id
   instance_type = "t2.micro"
 
   security_groups             = [aws_security_group.instance.id]
