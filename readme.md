@@ -32,7 +32,7 @@ git clone https://github.com/4babushkin/aws_alb /tmp/aws_alb;
 HOME=/root /usr/bin/ansible-playbook -i /tmp/aws_alb/ansible/hosts /tmp/aws_alb/ansible/site.yml -vvv &> /tmp/ansible.log;
 ```
 
-ansible-playbook installs docker engine, pull this git repository, and runs this docker-compose.yml
+ansible-playbook installs docker engine, pulls this git repository, and starts this docker-compose.yml
 
 
 ```
