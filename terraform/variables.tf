@@ -6,9 +6,11 @@ variable aws_access_key {
 variable aws_secret_key {
   description = "AWS Secret key:"
 }
-variable key_name {
-  default = "babushkin"
+variable public_key_path {
+  description = "Path to the public key used for ssh access"
+  default     = "~/.ssh/id_rsa.pub"
 }
+
 
 variable aws_region {
   default = "eu-west-1"

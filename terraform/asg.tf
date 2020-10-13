@@ -1,3 +1,9 @@
+
+resource "aws_key_pair" "ssh-key" {
+  key_name   = "ssh_key_${var.aws_region}"
+  public_key = file(var.public_key_path)
+}
+
 #############################################################################
 # AutoScaling Group
 #############################################################################
@@ -29,7 +35,7 @@ resource "aws_launch_configuration" "ubuntu-ec2" {
   instance_type = "t2.micro"
 
   security_groups             = [aws_security_group.instance.id]
-  key_name                    = var.key_name
+  key_name                    = aws_key_pair.ssh-key.key_name
   associate_public_ip_address = true
   user_data                   = <<-EOF
 #!/bin/bash
